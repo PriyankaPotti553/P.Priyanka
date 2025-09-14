@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Job Recommender</title>
+    <!-- Google Fonts: Using Segoe UI as per original styles, but Inter could be swapped if preferred -->
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+    <!-- Font Awesome for eye icon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+    <style>
+      /* --- Global Reset & Base Styles --- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        scroll-behavior: smooth;
+      }
+
+      body {
+        font-family: 'Segoe UI', 'Inter', sans-serif;
+        background: #f7f9fc;
+        color: #333;
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex; /* Makes body a flex container */
+        flex-direction: column; /* Stacks children vertically */
+      }
+
+      /* --- Navbar --- */
+      .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1.2rem 3rem;
+        background: #ffffff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+        position: sticky;
+        top: 0;
+        z-index: 999;
+      }
+
+      .navbar .logo {
+        font-weight: 700;
+        font-size: 1.4rem;
+        color: #4b48ec;
+      }
+
+      .nav-links {
+        list-style: none;
+        display: flex;
+        gap: 1.2rem;
+        align-items: center;
+      }
+
+      .nav-links a {
+        text-decoration: none;
+        color: #333;
+        font-weight: 500;
+        transition: color 0.3s ease;
+      }
+
+      .nav-links a:hover {
+        color: #4b48ec;
+      }
+
+      .nav-btn {
+        padding: 8px 18px;
+        background: #4b48ec;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: background 0.3s ease;
+      }
+
+      .nav-btn:hover {
+        background: #3734c5;
+      }
+
+      .nav-btn.secondary {
+        background: transparent;
+        border: 1px solid #4b48ec;
+        color: #4b48ec;
+      }
+
+      .nav-btn.secondary:hover {
+        background: #4b48ec;
+        color: white;
+      }
+
+      /* Hamburger */
+      .hamburger {
+        display: none;
+        font-size: 1.8rem;
+        cursor: pointer;
+        color: #4b48ec;
+      }
+
+      /* Mobile Slide Menu */
+      .mobile-menu {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 250px;
+        height: 100%;
+        background-color: #fff;
+        box-shadow: 2px 0 12px rgba(0, 0, 0, 0.1);
+        transition: left 0.3s ease-in-out;
+        padding: 2rem 1.2rem;
+        z-index: 1000;
+      }
+
+      .mobile-menu.open {
+        left: 0;
+      }
+
+      .mobile-menu ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1.2rem;
+      }
+
+      .mobile-menu a {
+        color: #333;
+        text-decoration: none;
+        font-size: 1.1rem;
+        font-weight: 500;
+      }
+
+      .mobile-menu .nav-btn {
+        width: 100%;
+        text-align: left;
+        margin-top: 10px;
+      }
+
+      /* --- Main Content Wrapper --- */
+      /* This div will take up all available space between header and footer */
+      .main-content-wrapper {
+        flex-grow: 1; /* Allows it to expand and push footer down */
+        display: flex; /* Makes it a flex container for its sections */
+        flex-direction: column; /* Stacks sections vertically */
+      }
+
+      /* --- Hero Section --- */
+      .hero {
+        text-align: center;
+        padding: 6rem 2rem;
+        background: linear-gradient(120deg, #eef0f9, #ffffff);
+        color: #333;
+        border-radius: 0 0 40px 40px;
+        box-shadow: 0 5px 15px rgba(79, 70, 229, 0.1);
+        animation: fadeIn 1.2s ease forwards;
+        max-width: 1200px; /* Added max-width for consistency */
+        margin: 0 auto; /* Center hero horizontally */
+        width: 100%; /* Ensure it takes full width up to max-width */
+      }
+      .hero h1 {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        font-weight: 700;
+        color: #4b48ec;
+      }
+      .highlight {
+        color: #4b48ec;
+      }
+      .hero p {
+        font-size: 1.2rem;
+        margin-bottom: 2rem;
+        color: #555;
+        max-width: 600px;
+        margin: 0 auto 36px;
+        opacity: 0.9;
+      }
+      .hero-buttons {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+      }
+      .hero-buttons button {
+        padding: 12px 24px;
+        font-size: 1rem;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        background: #4b48ec;
+        color: white;
+      }
+      .hero-buttons button:hover {
+        background: #3734c5;
+      }
+
+      /* --- About Section --- */
+      .about {
+        text-align: center;
+        padding: 5rem 2rem;
+        background: #ffffff;
+        max-width: 1200px; /* Added max-width for consistency */
+        margin: 0 auto; /* Center about section horizontally */
+        width: 100%; /* Ensure it takes full width up to max-width */
+      }
+      .about h2 {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        color: #222;
+      }
+      .about p {
+        max-width: 700px;
+        margin: 0 auto 2.5rem;
+        line-height: 1.8;
+        color: #555;
+      }
+
+      /* Feature Boxes */
+      .features {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        padding: 80px 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .feature-box {
+        background: #f1f4ff;
+        padding: 2rem;
+        border-radius: 12px;
+        width: 260px;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(75, 72, 236, 0.08);
+        transition: transform 0.3s ease;
+      }
+      .feature-box:hover {
+        transform: translateY(-8px);
+      }
+      .feature-box h3 {
+        margin-bottom: 0.5rem;
+        color: #4b48ec;
+        font-size: 1.2rem;
+      }
+
+      /* --- Platform/Integrations Section --- */
+      .platforms {
+        padding: 5rem 2rem;
+        text-align: center;
+        background: #f9fbff;
+        max-width: 1200px; /* Added max-width for consistency */
+        margin: 0 auto; /* Center platforms section horizontally */
+        width: 100%; /* Ensure it takes full width up to max-width */
+      }
+      .platforms h2 {
+        font-size: 2.5rem;
+        color: #222;
+      }
+      .platform-cards {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        flex-wrap: wrap;
+        margin-top: 2.5rem;
+      }
+      .card {
+        background: #ffffff;
+        padding: 2rem 1.5rem;
+        border-radius: 12px;
+        width: 220px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s ease;
+      }
+      .card:hover {
+        transform: translateY(-10px);
+      }
+      .card img {
+        width: 100px;
+        margin-bottom: 1rem;
+      }
+      .card h3 {
+        color: #4b48ec;
+        margin-bottom: 0.5rem;
+      }
+
+      /* --- Forms Container (login, signup, forgot, reset) --- */
+      .forms-container {
+        max-width: 480px;
+        width: 100%; /* Ensure it takes full width up to max-width */
+        /* margin: auto; - Removed this, parent flexbox handles centering */
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(251, 146, 60, 0.25);
+        padding: 40px 36px; /* Retained padding for internal spacing */
+        display: none; /* Controlled by JavaScript */
+        animation: fadeIn 0.8s ease forwards;
+        box-sizing: border-box;
+      }
+      .forms-container.active {
+        display: block;
+      }
+
+      /* Common form elements styles */
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      label {
+        display: flex;
+        flex-direction: column;
+        font-weight: 600;
+        font-size: 14px;
+        color: #333;
+      }
+      input {
+        margin-top: 6px;
+        padding: 10px 14px;
+        font-size: 16px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        transition: border-color 0.3s ease;
+        width: 100%;
+      }
+      input:focus {
+        border-color: #fb923c;
+        outline: none;
+      }
+      button[type="submit"] {
+        background: #fb923c;
+        color: white;
+        font-weight: 700;
+        font-size: 16px;
+        padding: 14px 0;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 3px 10px rgba(251, 146, 60, 0.6);
+      }
+      button[type="submit"]:hover {
+        background: #f97316;
+        box-shadow: 0 6px 18px rgba(249, 115, 22, 0.7);
+      }
+
+      /* Specific adjustments for forms */
+      .forms-container h2 {
+        text-align: center;
+        color: #4b48ec;
+        margin-bottom: 0.5rem;
+      }
+      .forms-container .subtitle {
+        text-align: center;
+        color: #555;
+        margin-bottom: 2rem;
+        font-size: 0.95rem;
+      }
+      .forms-container .actions {
+        text-align: right;
+        margin-bottom: 1.2rem;
+      }
+      .forms-container .actions .forgot {
+        color: #4b48ec;
+        font-size: 0.9rem;
+        text-decoration: none;
+      }
+      .forms-container .signup-link,
+      .forms-container .login-link {
+        text-align: center;
+        margin-top: 1rem;
+        font-size: 0.9rem;
+      }
+      .forms-container .signup-link a,
+      .forms-container .login-link a {
+        color: #4b48ec;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      /* Message display */
+      #loginMessage, #signupMessage, #resetMessage, #forgetPasswordMessage, #resumeUploadMessage, #profileMessage, #jobRecommendationsMessage {
+        text-align: center;
+        font-weight: 600;
+        min-height: 22px;
+        margin-top: 10px;
+      }
+      .success { color: #22c55e; }
+      .error { color: #ef4444; }
+
+      /* New styles for password toggle */
+      .password-container {
+        position: relative;
+        width: 100%;
+      }
+
+      .password-container input {
+        padding-right: 40px; /* Make space for the icon */
+      }
+
+      .password-toggle {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #888;
+        font-size: 1.1rem;
+      }
+
+      /* --- Resume Upload Section Specific Styling (Note: This section is now mostly handled by 
+      _page.html) --- */
+      #resume-upload-section {
+          padding: 60px 20px;
+          text-align: center;
+          background: #f7f9fc; /* Body background */
+          display: none; /* Controlled by JS */
+          box-sizing: border-box; /* Ensures padding included in total dimensions */
+          flex-grow: 1; /* Allow section to grow and push footer down */
+      }
+      #resume-upload-section .hero-resume {
+        padding: 0; /* Already covered by section padding */
+        text-align: center;
+        background: none; /* No specific background here, body background is fine */
+        margin-bottom: 40px;
+        box-shadow: none; /* No shadow */
+      }
+      #resume-upload-section .hero-resume h1 {
+        font-size: 36px;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 10px;
+      }
+      #resume-upload-section .hero-resume .highlight {
+        color: #4a4aff;
+      }
+      #resume-upload-section .hero-resume p {
+        color: #555;
+        font-size: 18px;
+        margin: 0 auto 30px;
+        max-width: 700px;
+      }
+
+      .main-upload-container { /* Renamed from forms-container to avoid conflict */
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 30px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+        box-sizing: border-box;
+      }
+
+      .main-upload-container .form-label {
+        font-weight: 500;
+        color: #333;
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+
+      .main-upload-container .form-control-file {
+        font-size: 16px;
+        padding: 12px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        width: 100%;
+        box-sizing: border-box;
+        margin-bottom: 20px;
+      }
+
+      .main-upload-container .btn-upload-primary {
+        background-color: #4a4aff;
+        border: none;
+        font-size: 16px;
+        padding: 12px;
+        width: 100%;
+        border-radius: 8px;
+        color: white;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      .main-upload-container .btn-upload-primary:hover {
+        background-color: #3333ff;
+      }
+
+      .badge-skill {
+        background: #4a4aff;
+        color: #fff;
+        margin: 5px;
+        padding: 8px 14px;
+        border-radius: 20px;
+        font-size: 14px;
+        display: inline-block;
+      }
+
+      .job-role-result {
+        background-color: #eaf6ff;
+        color: #0d6efd;
+        margin: 10px 0;
+        padding: 12px;
+        border-radius: 8px;
+        text-align: center;
+        font-weight: 500;
+      }
+      #resumeResult {
+          margin-top: 20px;
+          padding: 15px;
+          border-top: 1px solid #eee;
+      }
+      #resumeResult h5 {
+          color: #4b48ec;
+          margin-bottom: 10px;
+          text-align: center;
+      }
+      .btn-back-home {
+        background: #4b48ec;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 20px;
+      }
+      .btn-back-home:hover {
+        background: #3734c5;
+      }
+
+
+      /* --- Profile Section Styling --- */
+      #profile-section {
+          display: none; /* Controlled by JS */
+      }
+      #profile-section .profile-content {
+        max-width: 600px;
+        width: 100%; /* Ensure it takes full width up to max-width */
+        /* margin: auto; - Removed this, parent flexbox handles centering */
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(75, 72, 236, 0.1);
+        padding: 40px 36px; /* Retained padding for internal spacing */
+        text-align: center;
+      }
+      #profile-section .profile-content h2 {
+        color: #4b48ec;
+        margin-bottom: 20px;
+      }
+      #profile-section .profile-content p {
+        font-size: 1.1rem;
+        color: #555;
+        margin-bottom: 10px;
+      }
+
+      /* --- Job Recommendations Section Styling (This section is now handled by upload_resume_page.html) --- */
+      #job-recommendations-section {
+        display: none; /* Controlled by JS */
+        padding: 40px 20px;
+        flex-grow: 1; /* Allow to fill space */
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      #job-recommendations-section h2 {
+          text-align: center;
+          font-size: 2.5rem;
+          color: #222;
+          margin-bottom: 40px;
+      }
+      .job-card {
+        background-color: #ffffff;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+      }
+      .job-card:hover {
+        transform: scale(1.02);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      }
+      .job-card .job-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #0d6efd;
+        margin-bottom: 15px;
+        text-align: center;
+      }
+      .job-card .platform-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 10px;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .job-card .platform-name {
+        font-weight: bold;
+        color: #333;
+        flex: 1;
+        padding-left: 20px;
+      }
+      .job-card .view-btn {
+        background-color: #0d6efd;
+        color: #fff;
+        border: none;
+        padding: 8px 18px;
+        border-radius: 6px;
+        font-size: 14px;
+        text-decoration: none;
+        transition: background-color 0.3s ease;
+      }
+      .job-card .view-btn:hover {
+        background-color: #0b5ed7;
+      }
+      .back-link-jobs { /* Specific class for back button on job recs */
+          display: inline-block;
+          margin-top: 30px;
+          text-decoration: none;
+          padding: 10px 20px;
+          background-color: #4b48ec; /* Consistent with main theme */
+          color: white;
+          border-radius: 6px;
+          transition: background-color 0.3s ease;
+      }
+      .back-link-jobs:hover {
+          background-color: #3734c5;
+      }
+
+
+      /* --- Footer --- */
+      .site-footer {
+        background-color: #111;
+        color: #fff;
+        padding: 3rem 2rem 1rem;
+        margin-top: auto; /* Ensures footer sticks to bottom if content is short */
+      }
+
+      .footer-content {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 2rem;
+        max-width: 1200px; /* Consistent max-width with main content */
+        margin: 0 auto;
+      }
+
+      .footer-brand,
+      .footer-links,
+      .footer-contact,
+      .footer-social {
+        flex: 1 1 220px;
+      }
+
+      .footer-brand h3 {
+        color: #4b48ec;
+        margin-bottom: 0.5rem;
+      }
+
+      .footer-brand p {
+        color: #ccc;
+        font-size: 0.95rem;
+        line-height: 1.6;
+      }
+
+      .footer-links h4,
+      .footer-contact h4,
+      .footer-social h4 {
+        margin-bottom: 1rem;
+        color: #fff;
+        font-size: 1.1rem;
+      }
+
+      .footer-links ul,
+      .footer-contact ul,
+      .footer-social ul {
+        list-style: none;
+        padding: 0;
+      }
+
+      .footer-links li,
+      .footer-contact li {
+        margin-bottom: 0.5rem;
+        font-size: 0.95rem;
+        color: #ccc;
+      }
+
+      .footer-links a {
+        color: #ccc;
+        text-decoration: none;
+        transition: color 0.3s ease;
+      }
+
+      .footer-links a:hover {
+        color: #4b48ec;
+      }
+
+      .footer-social .social-icons {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        padding-top: 0.5rem;
+      }
+
+      .footer-social .social-icons li {
+        list-style: none;
+      }
+
+      .footer-social .social-icons img {
+        width: 32px;
+        height: auto;
+        filter: grayscale(100%);
+        transition: filter 0.3s ease, transform 0.3s ease;
+      }
+
+      .footer-social .social-icons img:hover {
+        filter: grayscale(0%);
+        transform: scale(1.1);
+      }
+
+      .footer-bottom {
+        text-align: center;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #333;
+        font-size: 0.9rem;
+        color: #aaa;
+      }
+
+      /* Animations */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      /* --- Responsive Enhancements --- */
+      @media (max-width: 768px) {
+        .nav-links {
+          display: none;
+        }
+        .hamburger {
+          display: block;
+        }
+        .navbar {
+          padding: 1rem 1.5rem;
+        }
+        .hero h1, .hero-resume h1 { /* Apply to both hero headings */
+          font-size: 2.2rem;
+        }
+        .hero p, .hero-resume p { /* Apply to both hero paragraphs */
+          font-size: 1rem;
+        }
+        .features {
+          flex-direction: column;
+          align-items: center;
+        }
+        .feature-box,
+        .card {
+          width: 90%;
+        }
+        .footer-content {
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
+        }
+        .footer-brand,
+        .footer-links,
+        .footer-contact,
+        .footer-social {
+          flex: 1 1 100%;
+        }
+        .footer-social .social-icons {
+            justify-content: center;
+        }
+        .main-upload-container {
+            margin: 20px auto; /* Adjust margin for smaller screens */
+            padding: 20px;
+        }
+        #job-recommendations-section .job-card .platform-row {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        #job-recommendations-section .job-card .platform-name {
+            margin-bottom: 5px;
+        }
+        #job-recommendations-section .job-card .view-btn {
+            width: 100%;
+            text-align: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+
+    <nav class="navbar">
+      <div class="logo">💼 AI Job Recommender</div>
+      <div class="hamburger" onclick="toggleMenu()">☰</div>
+      <ul class="nav-links">
+        <li><a href="#" onclick="showSection('home-section')">Home</a></li>
+        <li><a href="#" onclick="showSection('about')">About</a></li>
+        <li><a href="#" onclick="showSection('integrations')">Integrations</a></li>
+        <li id="nav-login-btn-logged-out"><button onclick="showSection('login')" class="nav-btn">Login</button></li>
+        <li id="nav-signup-btn-logged-out"><button onclick="showSection('signup')" class="nav-btn secondary">Signup</button></li>
+        <li id="nav-profile-btn-logged-in" style="display:none;"><button onclick="showSection('profile-section')" class="nav-btn">Profile</button></li>
+        <li id="nav-logout-btn-logged-in" style="display:none;"><button onclick="logout()" class="nav-btn secondary">Logout</button></li>
+      </ul>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu">
+      <ul>
+        <li><a href="#" onclick="showSection('home-section'); toggleMenu()">Home</a></li>
+        <li><a href="#" onclick="showSection('about'); toggleMenu()">About</a></li>
+        <li><a href="#" onclick="showSection('integrations'); toggleMenu()">Integrations</a></li>
+        <li id="mobile-nav-login-btn-logged-out"><button onclick="showSection('login'); toggleMenu()" class="nav-btn">Login</button></li>
+        <li id="mobile-nav-signup-btn-logged-out"><button onclick="showSection('signup'); toggleMenu()" class="nav-btn secondary">Signup</button></li>
+        <li id="mobile-nav-profile-btn-logged-in" style="display:none;"><button onclick="showSection('profile-section'); toggleMenu()" class="nav-btn">Profile</button></li>
+        <li id="mobile-nav-logout-btn-logged-in" style="display:none;"><button onclick="logout(); toggleMenu()" class="nav-btn secondary">Logout</button></li>
+      </ul>
+    </div>
+
+    <!-- New: Main Content Wrapper -->
+    <div class="main-content-wrapper">
+        <section class="hero" id="home-section">
+          <h1>
+            Find Your Perfect Job with <span class="highlight">AI Intelligence</span>
+          </h1>
+          <p>
+            Our advanced AI analyzes thousands of job opportunities across multiple platforms.
+          </p>
+          <div class="hero-buttons">
+            <button id="hero-get-started-btn" onclick="showSection('login')">Get Started</button>
+            <button id="hero-upload-resume-btn" onclick="window.location.href = 'upload_resume_page.html';" style="display:none;">Upload Resume</button>
+          </div>
+        </section>
+
+        <section id="about" class="about">
+          <h2>About Our Platform</h2>
+          <p>
+            AI Job Recommender uses cutting-edge machine learning to personalize your job search. We integrate with top platforms like LinkedIn, Naukri, and Indeed to bring the best job matches.
+          </p>
+          <div class="features">
+            <div class="feature-box">
+              <h3>🤖 AI-Powered Matching</h3>
+              <p>Advanced algorithms analyze your profile for perfect job matches.</p>
+            </div>
+            <div class="feature-box">
+              <h3>🔗 Multi-Platform Integration</h3>
+              <p>Access LinkedIn, Naukri, Indeed & more in one place.</p>
+            </div>
+            <div class="feature-box">
+              <h3>📡 Real-Time Updates</h3>
+              <p>Get instant alerts for job matches tailored to you.</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="integrations" class="platforms">
+          <h2>Integrated Platforms</h2>
+          <div class="platform-cards">
+            <div class="card">
+              <img src="https://www.cdnlogo.com/logos/l/15/linkedin-2013.svg" alt="LinkedIn" />
+              <h3>LinkedIn</h3>
+              <p>Our AI learns from your LinkedIn network to suggest the best-fit roles.</p>
+            </div>
+            <div class="card">
+              <img style="width:190px" src="https://static.naukimg.com/s/4/100/i/naukri_Logo.png" alt="Naukri" />
+              <h3>Naukri</h3>
+              <p>Find filtered jobs from India’s largest job portal with AI support.</p>
+            </div>
+            <div class="card">
+              <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Indeed_logo.png" alt="Indeed" />
+              <h3>Indeed</h3>
+              <p>AI recommendations based on your search and apply history.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="forms-container" id="login">
+          <h2>Welcome Back 👋</h2>
+          <p class="subtitle">Log in to your account</p>
+          <form id="loginForm" novalidate>
+            <label>Email:<input type="email" id="loginEmail" placeholder="you@example.com" required /></label>
+            <label>
+                Password:
+                <div class="password-container">
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required />
+                    <span class="password-toggle" onclick="togglePasswordVisibility('loginPassword', this)">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+            </label>
+            <div class="actions">
+              <a href="#" onclick="showSection('forgot')" class="forgot">Forgot password?</a>
+            </div>
+            <button type="submit">Login</button>
+            <p class="signup-link">
+              Don't have an account? <a href="#" onclick="showSection('signup')">Sign up</a>
+            </p>
+          </form>
+          <p id="loginMessage"></p>
+        </section>
+
+        <section class="forms-container" id="signup">
+          <h2>Create Account 👤</h2>
+          <p class="subtitle">Join AI Job Recommender today</p>
+          <form id="signupForm" novalidate>
+            <label>Full Name:<input type="text" id="signupName" placeholder="Your full name" required /></label>
+            <label>Email:<input type="email" id="signupEmail" placeholder="you@example.com" required /></label>
+            <label>
+                Password:
+                <div class="password-container">
+                    <input type="password" id="signupPassword" placeholder="Create a password" required />
+                    <span class="password-toggle" onclick="togglePasswordVisibility('signupPassword', this)">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+            </label>
+            <button type="submit">Sign Up</button>
+            <p class="login-link">
+              Already have an account? <a href="#" onclick="showSection('login')">Login</a>
+            </p>
+          </form>
+          <p id="signupMessage"></p>
+        </section>
+
+        <section class="forms-container" id="forgot">
+          <h2>Forgot Password</h2>
+          <form id="forgetPasswordForm" novalidate>
+            <label>Email:<input type="email" id="forgetEmail" placeholder="you@example.com" required /></label>
+            <button type="submit">Send Reset Link</button>
+          </form>
+          <p id="forgetPasswordMessage"></p>
+        </section>
+
+        <section class="forms-container" id="reset">
+          <h2>Set a New Password</h2>
+          <form id="resetPasswordForm" novalidate>
+            <label>
+                New Password:
+                <div class="password-container">
+                    <input type="password" id="newPassword" placeholder="Enter new password" required />
+                    <span class="password-toggle" onclick="togglePasswordVisibility('newPassword', this)">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+            </label>
+            <label>
+                Confirm Password:
+                <div class="password-container">
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password" required />
+                    <span class="password-toggle" onclick="togglePasswordVisibility('confirmPassword', this)">
+                        <i class="fas fa-eye"></i>
+                    </span>
+                </div>
+            </label>
+            <button type="submit">Save Password</button>
+          </form>
+          <p id="resetMessage"></p>
+        </section>
+
+        <section id="profile-section" style="display:none;">
+            <div class="profile-content">
+                <h2>Your Profile</h2>
+                <p>Welcome, <span id="profileUserName">User</span>!</p>
+                <p>Email: <span id="profileUserEmail"></span></p>
+                <p id="profileMessage"></p>
+                <button onclick="showSection('home-section')" class="btn-back-home">Back to Home</button>
+            </div>
+        </section>
+    </div> <!-- End of .main-content-wrapper -->
+    
+    <footer>
+      <div class="site-footer">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <h3>💼 AI Job Recommender</h3>
+            <p>Empowering your job search with AI-driven precision and real-time insights.</p>
+          </div>
+          <div class="footer-links">
+            <h4>Quick Links</h4>
+            <ul>
+              <li><a href="#" onclick="showSection('about')">About</a></li>
+              <li><a href="#" onclick="showSection('integrations')">Integrations</a></li>
+              <li><a href="#" onclick="showSection('login')">Login</a></li>
+              <li><a href="#" onclick="showSection('signup')">Signup</a></li>
+            </ul>
+          </div>
+          <div class="footer-contact">
+            <h4>Contact</h4>
+            <ul>
+              <li>Email: support@aijobrecommender.com</li>
+              <li>Phone: +91-9876543210</li>
+              <li>Address: Surampalem, India</li>
+            </ul>
+          </div>
+          <div class="footer-social">
+            <h4>Connect</h4>
+            <ul class="social-icons">
+              <li>
+                <a href="https://www.linkedin.com" target="_blank">
+                  <img src="https://cdn-icons-png.flaticon.com/512/174/174857.png" alt="LinkedIn" />
+                </a>
+              </li>
+              <li>
+                <a href="https://www.instagram.com" target="_blank">
+                  <img src="https://cdn-icons-png.flaticon.com/512/174/174855.png" alt="Instagram" />
+                </a>
+              </li>
+              <li>
+                <a href="https://www.facebook.com" target="_blank">
+                  <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook" />
+                </a>
+              </li>
+              <li>
+                <a href="https://www.twitter.com" target="_blank">
+                  <img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" alt="Twitter" />
+                </a>
+              </li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>© 2025 AI Job Recommender. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+
+    <script>
+      /**
+       * Toggles the visibility of the mobile navigation menu.
+       */
+      function toggleMenu() {
+        const menu = document.getElementById("mobileMenu");
+        menu.classList.toggle("open");
+      }
+
+      /**
+       * Toggles the type of a password input field between 'password' and 'text',
+       * and changes the eye icon accordingly.
+       * @param {string} inputId The ID of the password input field.
+       * @param {HTMLElement} iconElement The icon element (e.g., the <i> tag).
+       */
+      function togglePasswordVisibility(inputId, iconElement) {
+        const passwordInput = document.getElementById(inputId);
+        const icon = iconElement.querySelector('i');
+
+        if (passwordInput.type === "password") {
+          passwordInput.type = "text";
+          icon.classList.remove("fa-eye");
+          icon.classList.add("fa-eye-slash");
+        } else {
+          passwordInput.type = "password";
+          icon.classList.remove("fa-eye-slash");
+          icon.classList.add("fa-eye");
+        }
+      }
+
+      /**
+       * Updates the visibility of navigation links and hero button based on login status.
+       */
+      function updateUIForAuthStatus() {
+        const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+
+        // Navbar Links
+        document.getElementById("nav-login-btn-logged-out").style.display = isLoggedIn ? 'none' : 'list-item';
+        document.getElementById("nav-signup-btn-logged-out").style.display = isLoggedIn ? 'none' : 'list-item';
+        document.getElementById("nav-profile-btn-logged-in").style.display = isLoggedIn ? 'list-item' : 'none';
+        document.getElementById("nav-logout-btn-logged-in").style.display = isLoggedIn ? 'list-item' : 'none';
+
+        // Mobile Navbar Links
+        document.getElementById("mobile-nav-login-btn-logged-out").style.display = isLoggedIn ? 'none' : 'list-item';
+        document.getElementById("mobile-nav-signup-btn-logged-out").style.display = isLoggedIn ? 'none' : 'list-item';
+        document.getElementById("mobile-nav-profile-btn-logged-in").style.display = isLoggedIn ? 'list-item' : 'none';
+        document.getElementById("mobile-nav-logout-btn-logged-in").style.display = isLoggedIn ? 'list-item' : 'none';
+
+        // Hero Buttons
+        document.getElementById("hero-get-started-btn").style.display = isLoggedIn ? 'none' : 'inline-block';
+        document.getElementById("hero-upload-resume-btn").style.display = isLoggedIn ? 'inline-block' : 'none';
+
+        // Update profile section with user data if it's visible
+        if (isLoggedIn) {
+            document.getElementById("profileUserName").textContent = localStorage.getItem("userName") || "User";
+            document.getElementById("profileUserEmail").textContent = localStorage.getItem("userEmail") || "N/A";
+        }
+      }
+
+      /**
+       * Hides all main content sections and displays the specified section.
+       * @param {string} id The ID of the section to display ('home-section', 'about', 'integrations', 'login', 'signup', 'forgot', 'reset', 'profile-section').
+       */
+      function showSection(id) {
+        // Hide all main content sections initially within the wrapper
+        document.querySelectorAll('.main-content-wrapper > section').forEach(s => {
+            s.style.display = 'none';
+            s.classList.remove('active');
+        });
+
+        const target = document.getElementById(id);
+        const mainContentWrapper = document.querySelector('.main-content-wrapper');
+
+        if (target && mainContentWrapper) {
+            if (target.classList.contains('forms-container') || id === 'profile-section') {
+                // For forms and profile, center them within the wrapper
+                mainContentWrapper.style.justifyContent = 'center'; // Centers vertically
+                mainContentWrapper.style.alignItems = 'center';     // Centers horizontally
+                // Add vertical padding to the wrapper for forms/profile pages
+                mainContentWrapper.style.padding = '20px 0';
+            } else {
+                // For other main sections (home, about, integrations), reset alignment
+                mainContentWrapper.style.justifyContent = 'flex-start'; // Align content to the top
+                mainContentWrapper.style.alignItems = 'stretch';      // Allow children to stretch/fill width
+                // Remove vertical padding for these sections
+                mainContentWrapper.style.padding = '0';
+            }
+            target.style.display = 'block';
+            target.classList.add('active');
+        }
+
+        // Special handling for the main home view: ensure about and integrations are also shown.
+        // These sections are now children of .main-content-wrapper, so their display needs to be set.
+        if (id === 'home-section') {
+            document.getElementById('about').style.display = 'block';
+            document.getElementById('integrations').style.display = 'block';
+        }
+      }
+
+      // Initialize UI state and show appropriate section on page load
+      window.onload = function() {
+        updateUIForAuthStatus(); // Update buttons based on login status
+        showSection('home-section'); // Always show home-section first
+      };
+
+      /**
+       * Handles user signup. Stores user credentials in localStorage.
+       */
+      document.getElementById("signupForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const name = document.getElementById("signupName").value.trim();
+        const email = document.getElementById("signupEmail").value.trim();
+        const password = document.getElementById("signupPassword").value.trim();
+        const message = document.getElementById("signupMessage");
+        message.textContent = "";
+        message.className = "";
+
+        if (!name || !email || !password) {
+          message.textContent = "Please fill in all fields.";
+          message.className = "error";
+          return;
+        }
+
+        // Basic email validation
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            message.textContent = "Please enter a valid email address.";
+            message.className = "error";
+            return;
+        }
+
+        // Check if email already exists (simple check for demo)
+        if (localStorage.getItem("userEmail") === email) {
+            message.textContent = "Account with this email already exists.";
+            message.className = "error";
+            return;
+        }
+
+        localStorage.setItem("userName", name);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("userPassword", password);
+
+        message.textContent = "Signup successful! Redirecting to login...";
+        message.className = "success";
+        setTimeout(() => showSection('login'), 1500);
+      });
+
+      /**
+       * Handles user login. Checks credentials against localStorage.
+       */
+      document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const email = document.getElementById("loginEmail").value.trim();
+        const password = document.getElementById("loginPassword").value.trim();
+        const message = document.getElementById("loginMessage");
+        message.textContent = "";
+        message.className = "";
+
+        const storedEmail = localStorage.getItem("userEmail");
+        const storedPassword = localStorage.getItem("userPassword");
+        const storedUserName = localStorage.getItem("userName") || "User";
+
+        if (!email || !password) {
+          message.textContent = "Please enter both email and password.";
+          message.className = "error";
+          return;
+        }
+
+        if (email === storedEmail && password === storedPassword) {
+          message.textContent = `Login successful! Welcome, ${storedUserName}!`;
+          message.className = "success";
+          localStorage.setItem("isLoggedIn", "true");
+          setTimeout(() => {
+            message.textContent = ""; // Clear message
+            updateUIForAuthStatus(); // Update buttons and hero button
+            showSection('home-section'); // Go back to home-section, which now shows Upload Resume button
+          }, 1500);
+        } else {
+          message.textContent = "Invalid email or password.";
+          message.className = "error";
+        }
+      });
+
+      /**
+       * Handles user logout. Clears login status from localStorage.
+       */
+      function logout() {
+        localStorage.removeItem("isLoggedIn");
+        localStorage.removeItem("userName");
+        localStorage.removeItem("userEmail");
+        localStorage.removeItem("userPassword");
+        // Replaced alert with console log as per instructions
+        console.log("You have been logged out successfully!"); 
+        updateUIForAuthStatus(); // Revert buttons and hero button
+        showSection('home-section'); // Redirect to home page
+      }
+
+      /**
+       * Handles forgot password request. Simulates sending a reset link.
+       */
+      document.getElementById("forgetPasswordForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const email = document.getElementById("forgetEmail").value.trim();
+        const message = document.getElementById("forgetPasswordMessage");
+        const storedEmail = localStorage.getItem("userEmail");
+        message.textContent = "";
+        message.className = "";
+
+        if (!email) {
+          message.textContent = "Please enter your email address.";
+          message.className = "error";
+          return;
+        }
+
+        if (email !== storedEmail) {
+          message.textContent = "Email not found. Please sign up first.";
+          message.className = "error";
+          return;
+        }
+
+        message.textContent = "Reset link sent to your email! Redirecting to reset password page...";
+        message.className = "success";
+        setTimeout(() => showSection('reset'), 1500);
+      });
+
+      /**
+       * Handles setting a new password. Updates password in localStorage.
+       */
+      document.getElementById("resetPasswordForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const newPassword = document.getElementById("newPassword").value.trim();
+        const confirmPassword = document.getElementById("confirmPassword").value.trim();
+        const message = document.getElementById("resetMessage");
+
+        if (!newPassword || !confirmPassword) {
+          message.textContent = "Please fill in both fields.";
+          message.className = "error";
+          return;
+        }
+
+        if (newPassword !== confirmPassword) {
+          message.textContent = "Passwords do not match.";
+          message.className = "error";
+          return;
+        }
+
+        localStorage.setItem("userPassword", newPassword);
+        message.textContent = "Password updated successfully! Redirecting to login...";
+        message.className = "success";
+        setTimeout(() => showSection('login'), 1500);
+      });
+    </script>
+  </body>
+</html>

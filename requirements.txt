@@ -1,0 +1,6 @@
+Flask
+python-dotenv
+google-generativeai
+numpy
+python-docx # For .docx files
+PyPDF2 # For .pdf files
